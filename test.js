@@ -32,8 +32,23 @@ async function testWebhookMessage() {
 			.send({
 				object: 'page',
 				entry: [
-					{messaging: [{sender: {id: 'userid'}}]},
-					{messaging: [{sender: {id: 'userid'}}]}
+					{
+						messaging: [
+							{
+								sender: {id: 'userid'},
+								message: {
+									text: 'Hello!'
+								}
+							}
+						]
+					}, {
+						messaging: [
+							{
+								sender: {id: 'userid'},
+								postback: 'postback'
+							}
+						]
+					}
 				]
 			});
 		assert.equal(res.status, 200);

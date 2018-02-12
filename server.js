@@ -1,8 +1,10 @@
 
 const Hapi = require('hapi');
+const request = require('superagent');
 
 const port = process.env.PORT || 8000;
-const messengerToken = process.env.MESSENGER_TOKEN || 'test_token';
+const messengerToken = process.env.MESSENGER_TOKEN || 'test_messenger_token';
+const accessToken = process.env.FB_PAGE_ACCESS_TOKEN || 'test_access_token';
 
 console.log('Server port', port);
 
@@ -37,6 +39,12 @@ server.route({
             console.log('webhook_event', webhookEvent);
             let senderPsid = webhookEvent.sender.id;
             console.log('Sender PSID: ' + senderPsid);
+
+            if (webhookEvent.message) {
+                handleMessage(senderPsid, webhookEvent.message);        
+            } else if (webhookEvent.postback) {
+                handlePostback(senderPsid, webhookEvent.postback);
+            }
         });
 
         return h
@@ -78,16 +86,42 @@ server.route({
     }
 });
 
-function handleMessage(sender_psid, received_message) {
+function handleMessage(senderPsid, receivedMessage) {
+    console.log('handleMessage', senderPsid, receivedMessage);
 
+    if (!receivedMessage.text) {
+        return;
+    }
+
+    const response = {
+      text: `You sent the message: "${receivedMessage.text}". Now send me an image!`
+    }
+
+    callSendAPI(senderPsid, response);  
 }
 
-function handlePostback(sender_psid, received_postback) {
-
+function handlePostback(senderPsid, receivedPostback) {
+    console.log('handlePostback', senderPsid, receivedPostback);
 }
 
-function callSendAPI(sender_psid, response) {
-  
+async function callSendAPI(senderPsid, response) {
+    console.log('callSendAPI', senderPsid, response);
+
+    let requestBody = {
+        recipient: {
+            id: senderPsid
+        },
+        message: response
+    };
+
+    try {
+        const result = await request
+            .post(`https://graph.facebook.com/v2.6/me/messages?access_token=${accessToken}`)
+            .send(requestBody);
+        console.log('Message sent!');
+    } catch (err) {
+        console.error(err);
+    }
 }
 
 module.exports = server;
