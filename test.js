@@ -60,7 +60,9 @@ async function testWebhookMessage() {
 						messaging: [
 							{
 								sender: {id: 'userid'},
-								postback: 'postback'
+								postback: {
+									payload: 'yes'
+								}
 							}
 						]
 					}

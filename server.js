@@ -41,7 +41,7 @@ server.route({
                     .response()
                     .code(400);
             }
-            
+
             let webhookEvent = entry.messaging[0];
             console.log('webhook_event', webhookEvent);
             let senderPsid = webhookEvent.sender.id;
@@ -136,11 +136,26 @@ function handleMessage(senderPsid, receivedMessage) {
 
         callSendAPI(senderPsid, response);
         return;
-    }    
+    }
 }
 
 function handlePostback(senderPsid, receivedPostback) {
     console.log('handlePostback', senderPsid, receivedPostback);
+
+    const payload = receivedPostback.payload;
+
+    response = getPostbackResponse(payload);
+
+    callSendAPI(senderPsid, response);
+}
+
+function getPostbackResponse(payload) {
+    switch (payload) {
+        case 'yes':
+            return {text: 'Thanks!'};
+        case 'no':
+            return {text: 'Oops, try sending another image.'};
+    }
 }
 
 async function callSendAPI(senderPsid, response) {
