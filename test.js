@@ -45,6 +45,21 @@ async function testWebhookMessage() {
 						messaging: [
 							{
 								sender: {id: 'userid'},
+								message: {
+									attachments: [
+										{
+											payload: {
+												url: 'someurl'
+											}
+										}
+									]
+								}
+							}
+						]
+					}, {
+						messaging: [
+							{
+								sender: {id: 'userid'},
 								postback: 'postback'
 							}
 						]

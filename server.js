@@ -35,6 +35,13 @@ server.route({
         }
 
         body.entry.forEach(function(entry) {
+            if (!entry.messaging) {
+                console.log('missing messaging property', entry);
+                return h
+                    .response()
+                    .code(400);
+            }
+            
             let webhookEvent = entry.messaging[0];
             console.log('webhook_event', webhookEvent);
             let senderPsid = webhookEvent.sender.id;
@@ -89,15 +96,47 @@ server.route({
 function handleMessage(senderPsid, receivedMessage) {
     console.log('handleMessage', senderPsid, receivedMessage);
 
-    if (!receivedMessage.text) {
+    if (receivedMessage.text) {
+        const response = {
+          text: `You sent the message: "${receivedMessage.text}". Now send me an image!`
+        }
+
+        callSendAPI(senderPsid, response);
         return;
     }
 
-    const response = {
-      text: `You sent the message: "${receivedMessage.text}". Now send me an image!`
-    }
+    if (receivedMessage.attachments) {
+        const attachmentUrl = receivedMessage.attachments[0].payload.url;
+        console.log('handleMessage', 'attachment', attachmentUrl);
 
-    callSendAPI(senderPsid, response);  
+        response = {
+            attachment: {
+                type: 'template',
+                payload: {
+                    template_type: 'generic',
+                    elements: [{
+                        title: 'Is this the right picture?',
+                        subtitle: 'Tap a button to answer.',
+                        image_url: attachmentUrl,
+                        buttons: [
+                            {
+                                type: 'postback',
+                                title: 'Yes!',
+                                payload: 'yes',
+                            }, {
+                                type: 'postback',
+                                title: 'No!',
+                                payload: 'no',
+                            }
+                        ]
+                    }]
+                }
+            }
+        };
+
+        callSendAPI(senderPsid, response);
+        return;
+    }    
 }
 
 function handlePostback(senderPsid, receivedPostback) {
