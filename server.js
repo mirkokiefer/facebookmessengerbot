@@ -162,6 +162,7 @@ async function callSendAPI(senderPsid, response) {
     console.log('callSendAPI', senderPsid, response);
 
     let requestBody = {
+        messaging_type: 'RESPONSE',
         recipient: {
             id: senderPsid
         },
